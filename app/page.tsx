@@ -3,7 +3,7 @@
 import { useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Bell, Menu, Mic, Loader2 } from 'lucide-react'
+import { Bell, Menu, Mic, Loader2, MessageSquare, Sparkles } from 'lucide-react'
 import { AuthProvider, useAuth } from 'lyzr-architect-pg/client'
 import { Toaster } from 'sonner'
 
@@ -100,7 +100,40 @@ function LandingContent() {
 
         <div className="relative w-full max-w-lg aspect-square md:aspect-[4/5] bg-card rounded-2xl border border-border shadow-sm overflow-hidden flex flex-col items-center justify-center p-3 ring-1 ring-black/5 dark:ring-white/10">
           <div className="absolute inset-0 bg-gradient-to-br from-primary/15 via-secondary/20 to-transparent" />
-          <div className="absolute bottom-4 left-4 right-4 bg-card/95 backdrop-blur-md border border-border rounded-lg p-3 flex items-center justify-between shadow-sm">
+          <div className="absolute -top-10 -right-10 w-40 h-40 bg-secondary/30 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute -bottom-16 -left-10 w-48 h-48 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
+
+          <div className="absolute top-5 right-5 z-10 bg-secondary/90 text-secondary-foreground rounded-lg px-3 py-2 shadow-md flex items-center gap-2 max-w-[62%]">
+            <Sparkles className="w-4 h-4 shrink-0" />
+            <span className="text-xs font-medium leading-tight">AI coaching in real time</span>
+          </div>
+
+          <div className="relative z-10 w-[85%] bg-card/95 backdrop-blur-sm border border-border rounded-xl p-5 shadow-md">
+            <div className="flex items-center justify-between gap-2 mb-3">
+              <div className="flex items-center gap-2">
+                <MessageSquare className="w-4 h-4 text-secondary-foreground" />
+                <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Interview Question</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div className="w-1.5 h-1.5 rounded-full bg-destructive animate-pulse" />
+                <span className="text-[10px] font-medium text-muted-foreground">Recording</span>
+              </div>
+            </div>
+            <p className="text-sm text-foreground leading-relaxed mb-4 text-pretty">
+              &quot;Tell me about a time you solved a difficult problem under pressure.&quot;
+            </p>
+            <div className="flex items-center justify-center gap-1 h-8">
+              {[6, 14, 9, 18, 11, 16, 7, 13, 10].map((h, i) => (
+                <div
+                  key={i}
+                  className="w-1 bg-primary/70 rounded-full animate-pulse"
+                  style={{ height: `${h}px`, animationDelay: `${i * 0.08}s` }}
+                />
+              ))}
+            </div>
+          </div>
+
+          <div className="absolute bottom-4 left-4 right-4 z-10 bg-card/95 backdrop-blur-md border border-border rounded-lg p-3 flex items-center justify-between shadow-sm">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-secondary text-secondary-foreground flex items-center justify-center">
                 <Mic className="w-5 h-5" />
