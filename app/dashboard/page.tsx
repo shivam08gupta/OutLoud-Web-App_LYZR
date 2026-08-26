@@ -99,7 +99,7 @@ function DashboardContent() {
   const [sessions, setSessions] = useState<Session[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [sampleData, setSampleData] = useState(true)
+  const [sampleData, setSampleData] = useState(false)
 
   useEffect(() => {
     let cancelled = false
@@ -114,7 +114,6 @@ function DashboardContent() {
         }
         const rows = Array.isArray(data.data) ? data.data : []
         setSessions(rows)
-        setSampleData(rows.length === 0)
       })
       .catch((err) => {
         if (!cancelled) setError(err?.message || 'Network error')
@@ -127,7 +126,7 @@ function DashboardContent() {
     }
   }, [authFetch])
 
-  const displaySessions = sampleData && sessions.length === 0 ? SAMPLE_SESSIONS : sessions
+  const displaySessions = sampleData ? SAMPLE_SESSIONS : sessions
   const sessionCount = displaySessions.length
   const questionsAnswered = displaySessions.reduce((sum, s) => sum + (Array.isArray(s.answers) ? s.answers.length : 0), 0)
   const lastSession = displaySessions[0]
