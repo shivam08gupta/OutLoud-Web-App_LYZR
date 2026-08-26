@@ -85,6 +85,39 @@ const QUESTION_BANKS: Record<string, { prompt: string; guidance: string }[]> = {
   ],
 }
 
+// `MediaRecorder.isTypeSupported()` reports true for mime types the recorder
+// then refuses to start with, so the only reliable capability test is actually
+// calling `start()`. Walk the candidates and keep the first recorder that
+// starts, falling back to letting the browser choose its own container.
+function startAudioRecorder(
+  audioStream: MediaStream,
+  onData: (e: BlobEvent) => void
+): MediaRecorder | null {
+  if (typeof MediaRecorder === 'undefined') return null
+  const candidates: (string | undefined)[] = [
+    'audio/webm;codecs=opus',
+    'audio/webm',
+    'audio/mp4',
+    undefined,
+  ]
+  for (const mimeType of candidates) {
+    try {
+      const recorder = mimeType
+        ? new MediaRecorder(audioStream, { mimeType })
+        : new MediaRecorder(audioStream)
+      recorder.ondataavailable = onData
+      recorder.start()
+      return recorder
+    } catch (err) {
+      console.error(
+        `[practice] MediaRecorder failed to start (mimeType=${mimeType ?? 'browser default'}):`,
+        err
+      )
+    }
+  }
+  return null
+}
+
 function getQuestionBank() {
   const role = typeof window !== 'undefined' ? localStorage.getItem('outloud_role') : null
   return (role && QUESTION_BANKS[role]) || QUESTION_BANKS.other
@@ -148,14 +181,6 @@ function PracticeContent() {
   const { user } = useAuth()
   const userId = user?.id
 
-  // Temporary, development-only diagnostic panel. Visible ONLY with ?diagnostics=1
-  // in the URL, so a real Android device can be tested without Chrome Remote
-  // Debugging or USB debugging. Never sends data anywhere; state is local only
-  // and every write below is guarded by this flag, so with the flag absent
-  // (the default), zero extra state updates or renders occur.
-  const diagnosticsEnabled = params.get('diagnostics') === '1'
-  const [diag, setDiag] = useState<Record<string, any>>({})
-
   const [activeMode, setActiveMode] = useState<'av' | 'audio'>(requestedMode)
   const [retryToken, setRetryToken] = useState(0)
   const [mediaError, setMediaError] = useState<string | null>(null)
@@ -218,16 +243,6 @@ function PracticeContent() {
         ;[mobileVideoRef, desktopVideoRef].forEach((ref) => {
           if (ref.current) ref.current.srcObject = stream
         })
-        if (diagnosticsEnabled) {
-          const audioTrack = stream.getAudioTracks()[0]
-          setDiag((prev) => ({
-            ...prev,
-            trackReadyState: audioTrack?.readyState,
-            trackEnabled: audioTrack?.enabled,
-            trackMuted: audioTrack?.muted,
-            trackSettings: audioTrack ? JSON.stringify(audioTrack.getSettings()) : '(no audio track)',
-          }))
-        }
         trackEvent('permissions_granted', {
           scenario_type: SCENARIO_TYPE,
           question_number: currentQuestion,
@@ -315,14 +330,9 @@ function PracticeContent() {
       user_id: userId,
     })
 
-    // Cosmetic live transcript, via the provider seam. Skipped on Android: its native
-    // SpeechRecognition service independently seizes the physical microphone at the OS
-    // level (outside this stream), which can mute/degrade the concurrent MediaRecorder
-    // capture that is the authoritative source for /api/transcribe. Desktop and iOS are
-    // unaffected (iOS never reaches here since isSupported() is already false there).
+    // Cosmetic live transcript, via the provider seam.
     const provider = providerRef.current
-    const isAndroid = typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent)
-    if (provider?.isSupported() && streamRef.current && !isAndroid) {
+    if (provider?.isSupported() && streamRef.current) {
       provider.onPartial((text) => setTranscript(text))
       provider.onError((e) => {
         if (e.fatal) setSttError(e.message)
@@ -334,44 +344,26 @@ function PracticeContent() {
     // transcript comes from the uploaded audio, not just Web Speech.
     recordedChunksRef.current = []
     if (streamRef.current) {
-      try {
-        const mimeCandidates = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4']
-        const supportedMime = mimeCandidates.find((m) => typeof MediaRecorder !== 'undefined' && MediaRecorder.isTypeSupported?.(m))
-        if (diagnosticsEnabled) {
-          setDiag((prev) => ({ ...prev, mimeType: supportedMime || '(none supported)' }))
-        }
-        const recorder = supportedMime
-          ? new MediaRecorder(streamRef.current, { mimeType: supportedMime })
-          : new MediaRecorder(streamRef.current)
-        recorder.ondataavailable = (e) => {
-          if (e.data && e.data.size > 0) recordedChunksRef.current.push(e.data)
-          if (diagnosticsEnabled) {
-            setDiag((prev) => ({
-              ...prev,
-              chunkCount: recordedChunksRef.current.length,
-              chunkSizes: recordedChunksRef.current.map((c) => c.size).join(', '),
-            }))
-          }
-        }
-        if (diagnosticsEnabled) {
-          recorder.onstart = () => {
-            const t = streamRef.current?.getAudioTracks()[0]
-            setDiag((prev) => ({
-              ...prev,
-              recorderState: recorder.state,
-              trackReadyState: t?.readyState,
-              trackMuted: t?.muted,
-              trackEnabled: t?.enabled,
-            }))
-          }
-          recorder.onerror = (e: any) => {
-            setDiag((prev) => ({ ...prev, recorderError: String(e?.error || e) }))
-          }
-        }
-        recorder.start()
-        mediaRecorderRef.current = recorder
-      } catch {
+      // Record the audio tracks on their own. MediaRecorder accepts an
+      // audio-only mimeType over an audio+video stream in the constructor and
+      // then throws NotSupportedError from start(), which silently killed
+      // recording in camera mode -- /api/transcribe was never called and the
+      // app degraded to the cosmetic Web Speech layer, which is unreliable on
+      // Android. Dropping the video track also keeps the upload audio-sized
+      // rather than shipping video frames to Gemini.
+      const audioTracks = streamRef.current.getAudioTracks()
+      if (audioTracks.length === 0) {
+        console.error('[practice] media stream has no audio track; cannot record a response')
+        setSttError("We couldn't access your microphone. Check your browser's microphone permission and try again.")
         mediaRecorderRef.current = null
+      } else {
+        const recorder = startAudioRecorder(new MediaStream(audioTracks), (e) => {
+          if (e.data && e.data.size > 0) recordedChunksRef.current.push(e.data)
+        })
+        mediaRecorderRef.current = recorder
+        if (!recorder) {
+          setSttError("We couldn't start recording on this device, so your answer can't be transcribed. Please try again.")
+        }
       }
     }
   }
@@ -403,10 +395,6 @@ function PracticeContent() {
       blob = new Blob(recordedChunksRef.current, { type: recorder?.mimeType || 'audio/webm' })
     }
 
-    if (diagnosticsEnabled) {
-      setDiag((prev) => ({ ...prev, blobSize: blob?.size ?? 0, blobType: blob?.type ?? '(no blob)' }))
-    }
-
     sessionStorage.setItem(`outloud_question_${currentQuestion}`, question.prompt)
 
     let authoritativeText = ''
@@ -420,20 +408,30 @@ function PracticeContent() {
         formData.append('question_number', String(currentQuestion))
         const res = await fetch('/api/transcribe', { method: 'POST', body: formData })
         const data = await res.json().catch(() => ({}))
-        if (diagnosticsEnabled) {
-          setDiag((prev) => ({ ...prev, transcribeStatus: res.status, transcribeBody: JSON.stringify(data) }))
-        }
         if (data?.error === 'not_configured') {
+          console.warn('[practice] /api/transcribe is not configured (GEMINI_API_KEY unset); falling back to Web Speech')
           transcriptionUnsupported = true
         } else if (typeof data?.text === 'string') {
           authoritativeText = data.text.trim()
+          if (!authoritativeText) {
+            console.warn('[practice] /api/transcribe returned an empty transcript -- the recorded audio was likely silent')
+          }
         } else {
+          console.error('[practice] /api/transcribe returned an unexpected payload:', res.status, data)
           transcriptionUnsupported = true
         }
-      } catch {
+      } catch (err) {
+        console.error('[practice] /api/transcribe request failed:', err)
         transcriptionUnsupported = true
       }
     } else {
+      // No audio to send. Either the recorder never started (a real bug -- see
+      // startAudioRecorder) or it produced no chunks; both previously collapsed
+      // into the same silent "STT unsupported" path as a missing API key.
+      console.error(
+        '[practice] no audio blob to transcribe',
+        mediaRecorderRef.current ? '(recorder started but captured no data)' : '(recorder failed to start)'
+      )
       transcriptionUnsupported = true
     }
 
@@ -638,25 +636,6 @@ function PracticeContent() {
           </div>
         </div>
       </main>
-
-      {diagnosticsEnabled && (
-        <div className="fixed bottom-0 left-0 right-0 z-50 max-h-[45vh] overflow-y-auto bg-black/90 text-green-400 text-[10px] leading-relaxed font-mono p-3 whitespace-pre-wrap">
-          <div className="font-bold text-white mb-1">DIAGNOSTICS (dev only — ?diagnostics=1)</div>
-          <div>track.readyState: {String(diag.trackReadyState)}</div>
-          <div>track.enabled: {String(diag.trackEnabled)}</div>
-          <div>track.muted: {String(diag.trackMuted)}</div>
-          <div>track.getSettings(): {diag.trackSettings}</div>
-          <div>MediaRecorder mimeType: {diag.mimeType}</div>
-          <div>recorder.state (onstart): {diag.recorderState}</div>
-          <div>recorder error: {diag.recorderError}</div>
-          <div>chunk count: {diag.chunkCount}</div>
-          <div>chunk sizes: {diag.chunkSizes}</div>
-          <div>final blob size: {diag.blobSize}</div>
-          <div>final blob type: {diag.blobType}</div>
-          <div>/api/transcribe status: {diag.transcribeStatus}</div>
-          <div>/api/transcribe body: {diag.transcribeBody}</div>
-        </div>
-      )}
     </div>
   )
 }
