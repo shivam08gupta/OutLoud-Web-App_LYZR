@@ -640,7 +640,7 @@ function PracticeContent() {
       </main>
 
       {diagnosticsEnabled && (
-        <div className="fixed bottom-0 left-0 right-0 z-50 max-h-[45vh] overflow-y-auto bg-black/90 text-green-400 text-[10px] leading-relaxed font-mono p-3 whitespace-pre-wrap">
+        <div className="fixed bottom-0 left-0 right-0 z-50 max-h-[45vh] overflow-y-auto bg-black/90 text-green-400 text-[10px] leading-relaxed font-mono p-3 whitespace-pre-wrap pointer-events-none">
           <div className="font-bold text-white mb-1">DIAGNOSTICS (dev only — ?diagnostics=1)</div>
           <div>track.readyState: {String(diag.trackReadyState)}</div>
           <div>track.enabled: {String(diag.trackEnabled)}</div>
