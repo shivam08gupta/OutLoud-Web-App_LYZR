@@ -73,11 +73,13 @@ function FeedbackContent() {
   const [sttUnsupported, setSttUnsupported] = useState(false)
   const [transcript, setTranscript] = useState('')
   const [questionText, setQuestionText] = useState('Tell me about your response.')
+  const [sessionDataLoaded, setSessionDataLoaded] = useState(false)
 
   useEffect(() => {
     setSttUnsupported(sessionStorage.getItem(`outloud_transcript_unsupported_${currentQuestion}`) === '1')
     setTranscript(sessionStorage.getItem(`outloud_transcript_${currentQuestion}`) ?? '')
     setQuestionText(sessionStorage.getItem(`outloud_question_${currentQuestion}`) ?? 'Tell me about your response.')
+    setSessionDataLoaded(true)
   }, [currentQuestion])
 
   const [feedback, setFeedback] = useState<FeedbackShape | null>(null)
@@ -113,13 +115,14 @@ function FeedbackContent() {
   }
 
   useEffect(() => {
+    if (!sessionDataLoaded) return
     if (!questionText) return
     if (requestedForRef.current === currentQuestion) return
     requestedForRef.current = currentQuestion
     identifyUser(userId)
     requestFeedback()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentQuestion, questionText])
+  }, [currentQuestion, questionText, sessionDataLoaded])
 
   const handleRetryFeedback = () => {
     trackEvent('retry_clicked', {
