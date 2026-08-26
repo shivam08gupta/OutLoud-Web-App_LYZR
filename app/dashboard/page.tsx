@@ -281,7 +281,7 @@ function DashboardContent() {
                     return (
                       <div
                         key={session.id}
-                        className="p-4 md:px-6 md:py-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 hover:bg-muted/50 transition-colors"
+                        className={`p-4 md:px-6 md:py-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 transition-colors ${sampleData ? '' : 'hover:bg-muted/50'}`}
                       >
                         <div className="flex items-center gap-4 min-w-0">
                           <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-primary shrink-0">
@@ -304,7 +304,7 @@ function DashboardContent() {
                             </div>
                           </div>
                         </div>
-                        <ChevronRight className="w-5 h-5 text-muted-foreground self-end md:self-auto shrink-0" />
+                        {!sampleData && <ChevronRight className="w-5 h-5 text-muted-foreground self-end md:self-auto shrink-0" />}
                       </div>
                     )
                   })}
