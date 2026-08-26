@@ -245,7 +245,7 @@ function DashboardContent() {
 
           <section className="lg:col-span-12 mt-2">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-primary">Recent sessions</h3>
+              <h3 className="text-lg font-semibold text-primary">{sampleData ? 'Sample Data' : 'Recent sessions'}</h3>
               {sessionCount > 0 && (
                 <Link href="/returning" className="text-sm text-primary hover:underline">
                   View All
@@ -292,8 +292,8 @@ function DashboardContent() {
                               {firstAnswer?.question ?? 'Practice session'}
                             </div>
                             <div className="flex items-center gap-2 text-xs text-muted-foreground flex-wrap">
-                              <span>{formatRelativeDate(new Date(session.completed_at))}</span>
-                              <span className="w-1 h-1 rounded-full bg-border" />
+                              {!sampleData && <span>{formatRelativeDate(new Date(session.completed_at))}</span>}
+                              {!sampleData && <span className="w-1 h-1 rounded-full bg-border" />}
                               <span>{session.answers?.length ?? 0} question{(session.answers?.length ?? 0) === 1 ? '' : 's'}</span>
                               {focusTag && (
                                 <>
