@@ -12,7 +12,7 @@
       "has_knowledge_base": false,
       "has_memory": false,
       "managed_agents": [],
-      "model": "gpt-5-nano",
+      "model": "gpt-4o-mini",
       "name": "Feedback Coach Agent",
       "provider_id": "OpenAI",
       "response_format": {
@@ -21,7 +21,7 @@
       "temperature": 0.1,
       "tool_configs": [],
       "top_p": 1,
-      "updated_at": "2026-08-26T10:34:36.564329",
+      "updated_at": "2026-08-26T13:28:54.0014",
       "workflow_node_id": "agent"
     }
   ],
@@ -100,7 +100,7 @@
     },
     "status": "ready"
   },
-  "last_updated": "2026-08-26T10:34:36.564332",
+  "last_updated": "2026-08-26T13:28:54.001404",
   "summary": {
     "total_agents": 1,
     "total_knowledge_bases": 0,
