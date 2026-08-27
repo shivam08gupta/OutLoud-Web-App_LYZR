@@ -18,8 +18,8 @@ import { SSOGuard } from '@/components/SSOGuard'
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 
 export const metadata: Metadata = {
-  title: 'Next.js App',
-  description: 'Built with Next.js, React, and Tailwind CSS',
+  title: 'OutLoud',
+  description: 'AI-powered interview practice. Practise speaking your interview answers and get focused feedback to improve your next response.',
   icons: {
     icon: '/lyzr.png',
   },
