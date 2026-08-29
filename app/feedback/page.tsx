@@ -144,7 +144,7 @@ function FeedbackContent() {
 
   return (
     <AppSidebar active="practice">
-      <div className="flex-1 p-4 md:p-8 max-w-6xl mx-auto w-full">
+      <div className="flex-1 p-4 md:p-8 max-w-6xl mx-auto w-full mb-16 md:mb-0">
         <div className="mb-8 max-w-3xl">
           <div className="flex items-center gap-2 mb-2 text-muted-foreground text-sm">
             <Link href="/practice" className="hover:text-primary transition-colors">Practice</Link>
