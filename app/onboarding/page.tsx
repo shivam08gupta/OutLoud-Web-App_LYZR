@@ -30,6 +30,22 @@ function OnboardingContent() {
     }
   }
 
+  // Shortcut for tapping a selectable card directly: updates the selection
+  // and immediately advances using the same step-forward/finish logic as
+  // handleNext/Continue, so both paths stay in sync. Operates on the merged
+  // value rather than the (still-stale) `selection` state, since React state
+  // updates are not synchronous.
+  const selectAndAdvance = (patch: Partial<typeof selection>) => {
+    const updated = { ...selection, ...patch }
+    setSelection(updated)
+    if (currentStep < totalSteps) {
+      setCurrentStep((prev) => prev + 1)
+    } else {
+      localStorage.setItem('outloud_role', updated.role)
+      router.push('/permissions')
+    }
+  }
+
   const handleBack = () => {
     if (currentStep > 1) {
       setCurrentStep((prev) => prev - 1)
@@ -66,7 +82,7 @@ function OnboardingContent() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <button
-                onClick={() => setSelection({ ...selection, goal: 'job' })}
+                onClick={() => selectAndAdvance({ goal: 'job' })}
                 className={`flex flex-col items-start p-5 bg-card border-2 rounded-xl text-left transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring ${selection.goal === 'job' ? 'border-secondary bg-muted' : 'border-border hover:border-secondary'}`}
               >
                 <Briefcase className={`w-8 h-8 mb-3 ${selection.goal === 'job' ? 'text-secondary-foreground' : 'text-muted-foreground'}`} />
@@ -115,7 +131,7 @@ function OnboardingContent() {
               ].map((role) => (
                 <button
                   key={role.id}
-                  onClick={() => setSelection({ ...selection, role: role.id })}
+                  onClick={() => selectAndAdvance({ role: role.id })}
                   className={`flex items-center p-4 bg-card border-2 rounded-xl text-left transition-all duration-200 group focus:outline-none focus-visible:ring-2 focus-visible:ring-ring ${selection.role === role.id ? 'border-secondary bg-muted' : 'border-border hover:border-secondary hover:bg-muted'}`}
                 >
                   <role.icon className={`mr-3 w-6 h-6 ${selection.role === role.id ? 'text-secondary-foreground' : 'text-muted-foreground group-hover:text-secondary-foreground'}`} />
@@ -142,7 +158,7 @@ function OnboardingContent() {
               ].map((time) => (
                 <button
                   key={time.id}
-                  onClick={() => setSelection({ ...selection, timing: time.id })}
+                  onClick={() => selectAndAdvance({ timing: time.id })}
                   className={`flex items-center justify-center p-5 bg-card border-2 rounded-xl text-center transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring ${selection.timing === time.id ? 'border-secondary bg-muted' : 'border-border hover:border-secondary hover:bg-muted'}`}
                 >
                   <span className="text-lg font-medium text-foreground">{time.label}</span>
