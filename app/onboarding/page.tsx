@@ -33,6 +33,8 @@ function OnboardingContent() {
   const handleBack = () => {
     if (currentStep > 1) {
       setCurrentStep((prev) => prev - 1)
+    } else {
+      router.back()
     }
   }
 
@@ -153,8 +155,7 @@ function OnboardingContent() {
         <div className="fixed bottom-0 w-full max-w-3xl left-1/2 -translate-x-1/2 bg-background/95 backdrop-blur py-4 border-t border-border px-4 flex justify-between items-center z-10">
           <button
             onClick={handleBack}
-            disabled={currentStep === 1}
-            className={`text-sm font-medium text-muted-foreground hover:text-primary transition-colors flex items-center gap-2 min-h-10 px-2 ${currentStep === 1 ? 'opacity-50 cursor-not-allowed' : ''}`}
+            className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors flex items-center gap-2 min-h-10 px-2"
           >
             <ArrowLeft className="w-4 h-4" />
             Back
