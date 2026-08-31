@@ -58,12 +58,20 @@ export function AppSidebar({ active, children }: { active: ActiveNav; children?:
       <nav className="md:hidden flex justify-between items-center w-full px-4 h-16 bg-card border-b border-border sticky top-0 z-50">
         <div className="text-lg font-bold text-primary">OutLoud</div>
         <div className="flex items-center gap-2">
-          <button aria-label="Notifications" className="text-muted-foreground p-2 hover:bg-muted rounded-full transition-colors min-w-10 min-h-10 flex items-center justify-center">
+          <button
+            aria-label="Notifications"
+            onClick={() => setSettingsOpen(true)}
+            className="text-muted-foreground p-2 hover:bg-muted rounded-full transition-colors min-w-10 min-h-10 flex items-center justify-center"
+          >
             <Bell className="w-5 h-5" />
           </button>
-          <div className="w-8 h-8 rounded-full bg-primary/15 text-primary flex items-center justify-center font-bold text-sm">
+          <button
+            aria-label="Account"
+            onClick={() => setSettingsOpen(true)}
+            className="w-8 h-8 rounded-full bg-primary/15 text-primary flex items-center justify-center font-bold text-sm"
+          >
             {initial}
-          </div>
+          </button>
         </div>
       </nav>
 

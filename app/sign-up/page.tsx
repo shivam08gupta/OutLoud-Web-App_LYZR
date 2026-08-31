@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { Mic, Loader2, MessageSquare, Sparkles, Volume2 } from 'lucide-react'
 import { AuthProvider, RegisterForm, useAuth } from 'lyzr-architect-pg/client'
 import { Toaster } from 'sonner'
+import { PasswordFieldToggle } from '@/components/outloud/PasswordFieldToggle'
 
 function SignUpContent() {
   const router = useRouter()
@@ -42,7 +43,9 @@ function SignUpContent() {
               Start practising your interview answers with confidence.
             </p>
           </div>
-          <RegisterForm />
+          <PasswordFieldToggle inputId="reg-password">
+            <RegisterForm />
+          </PasswordFieldToggle>
           <p className="text-center text-sm text-muted-foreground mt-4">
             Already have an account?{' '}
             <Link href="/sign-in" className="text-primary hover:underline font-medium">

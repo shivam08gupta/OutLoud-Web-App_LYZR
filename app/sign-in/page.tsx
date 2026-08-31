@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { Mic, Loader2 } from 'lucide-react'
 import { AuthProvider, LoginForm, useAuth } from 'lyzr-architect-pg/client'
 import { Toaster } from 'sonner'
+import { PasswordFieldToggle } from '@/components/outloud/PasswordFieldToggle'
 
 function SignInContent() {
   const router = useRouter()
@@ -36,7 +37,9 @@ function SignInContent() {
       </header>
       <main className="flex-1 flex items-center justify-center px-4 pb-12">
         <div className="w-full max-w-[420px]">
-          <LoginForm />
+          <PasswordFieldToggle inputId="login-password">
+            <LoginForm />
+          </PasswordFieldToggle>
           <p className="text-center text-sm text-muted-foreground mt-4">
             Don&apos;t have an account?{' '}
             <Link href="/sign-up" className="text-primary hover:underline font-medium">
