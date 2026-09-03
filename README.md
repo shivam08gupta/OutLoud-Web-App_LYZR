@@ -4,9 +4,9 @@
 **OutLoud** is an AI-powered spoken English interview coach designed to help job seekers practice answering interview questions **out loud**, receive focused feedback, and retry their answers in their own words.
 > The product doesn't write your answer. It helps you speak it better.
 
-🔗 **Live MVP**: https://shivam-outloud-speaking-practice.architect.space/
-📊 **Product Case Study**: https://app.notion.com/p/Capstone-Project-OutLoud-3c2a5115b1e2803381a0ec7dc65958e8?source=copy_link
-🎥 **Demo**: LINK
+- 🔗 **Live MVP**: https://shivam-outloud-speaking-practice.architect.space/
+- 📊 **Product Case Study**: https://app.notion.com/p/Capstone-Project-OutLoud-3c2a5115b1e2803381a0ec7dc65958e8?source=copy_link
+- 🎥 **Demo**: LINK
 
 ## 🚨 The Problem
 Many job seekers understand English reasonably well but struggle when they have to **speak spontaneously under interview pressure**.
